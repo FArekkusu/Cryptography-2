@@ -12,15 +12,15 @@ There're 2 attacks which can help us decipher the messages:
 
 ### Finding spaces
 
-This attack relies on the fact that the applying XOR operation to the ASCII value of space character (`32`), and the ASCII value of a letter (`[65; 90]` for uppercase, and `[97; 122]` for lowercase) or a digit (`[48; 57]`) always results in a value `>= 65`. Thus if any byte in `text_1 ^ text_2` has a value `>= 65`, there is a space character in one of the messages at that position. With few messages available this approach is unlikely to yield any useful results, but as the number of messages increases, and the number of space characters at different positions in messages also increases, it's possible to recover many bytes of the encryption-key.
+This attack relies on the fact that applying XOR operation to the ASCII value of the space character (`32`), and the ASCII value of a letter (`[65; 90]` for uppercase, and `[97; 122]` for lowercase) or a digit (`[48; 57]`) always results in a value `>= 65`. Thus if any byte in `ciphertext_1 ^ ciphertext_2` has a value `>= 65`, then there is a space character in one of the messages at that position. With few messages available this approach is unlikely to yield any useful results, but as the number of messages increases, and the number of space characters at different positions also increases, it's possible to recover many bytes of the key.
 
 ### Finding concrete text
 
-This attack comes down to abusing the main issue of multi-time pad - when a part of one message is recovered, the same part of all other messages can be recovered. It's based solely on guesswork and comes down to the following algorithm:
+This attack comes down to abusing the main issue of multi-time pad - when a part of one message is recovered, the same part of all the other messages can be recovered too. It's based mostly on guesswork and comes down to the following algorithm:
 
-1. A list of words which are likely to appear in text are selected;
-2. The XOR operation is applied to `ciphertext_1 ^ ciphertext_2` using those words at different positions (e.g. `ciphertext_1.slice(n, n + word.length) ^ ciphertext_2.slice(n, n + word.length) ^ word`);
-3. If the result of the previous operation resembles human language, it is very likely that the word in question is indeed present in one of those 2 messages at that position, hence multiple bytes of the key are found, and the result itself is a piece of the other message at the same position;
+1. Several words which are likely to appear in the original text are selected;
+2. The XOR operation is applied to `ciphertext_1 ^ ciphertext_2` using those words at different positions, i.e. `ciphertext_1.slice(n, n + word.length) ^ ciphertext_2.slice(n, n + word.length) ^ word` where `n є [0; min(ciphertext_1.length, ciphertext_2.length) + word.length]`;
+3. If the result of the previous operation resembles human language, it is very likely that the word in question is indeed present in one of those 2 messages at that position, hence multiple bytes of the key can be found, and the result itself is a recovered piece of the other message;
 4. The previous steps are repeated using these newly-recovered pieces as "words" for further decryption.
 
-This approach is more difficult and time-consuming, as it requires human intervention to analyze what does and does not resemble human language, what other words can be tested based on the context, guess what the cut-off words could stand for, find mistakes in the incorrectly-guessed words etc. But at the same time, such analysis is a lot more thorough, and allows an almost complete recovery of the encryption-key.
+This approach is more difficult and time-consuming, as it requires human intervention to analyze what does and does not resemble human language, which other words can be tested based on the context, guess what the cut-off words could stand for, find mistakes in the incorrectly-guessed words etc. But at the same time, such analysis is a lot more thorough, and allows an almost complete recovery of the key.
